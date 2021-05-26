@@ -3,6 +3,7 @@ pipeline {
   environment {
     DOCKER_USERNAME = credentials('docker-hub-username')
     DOCKER_PASSWORD = credentials('docker-hub-password')
+    KUBECONFIG = credentials('kube-config-path')
   }
   stages {
     stage('Build') {
@@ -22,7 +23,7 @@ pipeline {
     }
     stage('Release the image') {
       steps {
-        sh 'helm install --set app.image=$DOCKER_USERNAME/goviolin  goviolin-${env.BUILD_ID} helm-chart/'
+        sh 'helm install --set app.image=$DOCKER_USERNAME/goviolin  goviolin-$BUILD_ID helm-chart/'
       }
     }
   }
@@ -32,10 +33,10 @@ pipeline {
       deleteDir()
     }
     success {
-      sh 'echo success'
+      slackSend color: "good", message: "Build Completed Successfully"
     }
     failure {
-      sh 'ehco fail'
+      slackSend color: "danger", message: "Buid Failed"
     }
   }
 }
